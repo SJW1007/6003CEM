@@ -28,16 +28,23 @@ export default function Login() {
         body: JSON.stringify(formData)
       });
 
-const data = await res.json();
-console.log('Login response data:', data);
-if (res.ok) {
-  alert(data.message);
-  console.log('Saving userId:', data.userId);
-  localStorage.setItem('userId', data.userId);
-  navigate('/home');
-} else {
-  setError(data.error || 'Login failed');
-}
+      const data = await res.json();
+      console.log('Login response data:', data);
+      
+      if (res.ok) {
+        alert(data.message);
+        
+        // Store authentication token and user info
+        console.log('Saving userId:', data.userId);
+        console.log('Saving token:', data.token);
+        
+        localStorage.setItem('userId', data.userId);
+        localStorage.setItem('token', data.token);
+        
+        navigate('/home');
+      } else {
+        setError(data.error || 'Login failed');
+      }
 
     } catch (err) {
       console.error('Login request failed:', err.message);
@@ -69,8 +76,8 @@ if (res.ok) {
           />
 
           <div className="forgot-password">
-            <Link to="/forgetpassword">Forgot Password?</Link>
-          </div>
+          <Link to="/forgetpassword">Forgot Password?</Link>
+        </div>
 
           <button className="login-button" type="submit">Login</button>
         </form>

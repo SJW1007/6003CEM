@@ -1,5 +1,6 @@
-body {
-  margin: 0;
+.background {
+  padding-top: 10px;  
+    height: 100vh;
   font-family: Georgia, serif;
   background-image: url('library.jpg');
   background-size: cover;
@@ -54,8 +55,8 @@ body {
 }
 
 .category-button {
-  background-color: #d9b88d;
-  color: white;
+  background-color: #f6f0e7;
+  color: black;
   border: none;
   padding: 10px 25px;
   border-radius: 10px;
@@ -68,7 +69,7 @@ body {
 }
 
 .category-button.active {
-  background-color: #796443;
+  background-color: #8d754e;
   color: white;
 }
 
@@ -76,7 +77,7 @@ body {
   display: flex;
   justify-content: center;
   gap: 80px;
-  background-color: #d9b88d;
+  background-color: #d3cec5;
   padding: 30px 10px;
   flex-wrap: wrap;
 }
@@ -170,4 +171,23 @@ img {
 
 img:not([src]) {
   opacity: 0.5;
+}
+
+.chatbot-float-icon {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background-color: #796443;
+  color: white;
+  padding: 15px;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  transition: background-color 0.3s ease;
+}
+
+.chatbot-float-icon:hover {
+  background-color: #a1885c;
+  color: white;
+  text-decoration: none;
 }

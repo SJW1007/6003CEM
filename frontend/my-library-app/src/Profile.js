@@ -1,10 +1,12 @@
 //Profile.js
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Profile.css';
 
 const Profile = () => {
   const userId = localStorage.getItem('userId');
+  const token = localStorage.getItem('token');
+  const navigate = useNavigate(); 
   const [user, setUser] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [favoriteLists, setFavoriteLists] = useState([]);
@@ -16,47 +18,180 @@ const Profile = () => {
   const [creatingNewList, setCreatingNewList] = useState(false);
   const [newListName, setNewListName] = useState('');
 
+ // Profile update states
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: '',
+    email: ''
+  });
+  const [updateLoading, setUpdateLoading] = useState(false);
+
+  // Helper function to create headers with authorization
+  const getAuthHeaders = useCallback(() => {
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  }, [token]);
+
+  // Helper function to handle authentication errors
+  const handleAuthError = useCallback((response) => {
+    if (response.status === 401 || response.status === 403) {
+      // Token expired or invalid, redirect to login
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      navigate('/', { replace: true });
+      return true;
+    }
+    return false;
+  }, [navigate]);
+
   const fetchListBooks = useCallback((listId) => {
-    fetch(`http://localhost:4000/api/favourite/list/${listId}`)
-      .then(res => res.json())
+    fetch(`http://localhost:4000/api/favourite/list/${listId}`, {
+      headers: getAuthHeaders()
+    })
+      .then(res => {
+        if (handleAuthError(res)) return;
+        return res.json();
+      })
       .then(data => {
-        setSelectedListBooks(prev => ({
-          ...prev,
-          [listId]: data
-        }));
+        if (data) {
+          setSelectedListBooks(prev => ({
+            ...prev,
+            [listId]: data
+          }));
+        }
       })
       .catch(err => console.error('Failed to fetch list books:', err));
-  }, []);
+  }, [getAuthHeaders, handleAuthError]);
 
   const fetchFavoriteLists = useCallback(() => {
-    fetch(`http://localhost:4000/api/favourite/lists/${userId}`)
-      .then(res => res.json())
+    console.log("Fetching favorite lists with token:", token);
+    fetch(`http://localhost:4000/api/favourite/lists/${userId}`, {
+      headers: getAuthHeaders()
+    })
+      .then(res => {
+        if (handleAuthError(res)) return;
+        return res.json();
+      })
       .then(data => {
-        setFavoriteLists(data);
-        // Fetch books for each list
-        data.forEach(list => fetchListBooks(list._id));
+        if (data) {
+          setFavoriteLists(data);
+          data.forEach(list => fetchListBooks(list._id));
+        }
       })
       .catch(err => console.error('Failed to fetch favorite lists:', err));
-  }, [userId, fetchListBooks]);
+  }, [userId, fetchListBooks, getAuthHeaders, handleAuthError, token]);
+
+  // Fetch user data
+  const fetchUserData = useCallback(() => {
+  fetch(`http://localhost:4000/api/user/${userId}`, {
+    headers: getAuthHeaders()
+  })
+    .then(res => {
+      if (handleAuthError(res)) return;
+      if (!res.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (data) {
+        setUser(data);
+        setProfileData({
+          name: data.name,
+          email: data.email
+        });
+      }
+    })
+    .catch(err => {
+      console.error('Failed to fetch user info:', err);
+      // Don't redirect on fetch errors, just log them
+    });
+}, [userId, getAuthHeaders, handleAuthError]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !token) {
+      // Redirect to login if no user ID or token
+      window.location.href = '/login';
+      return;
+    }
 
     // Fetch user info
-    fetch(`http://localhost:4000/api/user/${userId}`)
-      .then(res => res.json())
-      .then(data => setUser(data))
-      .catch(err => console.error('Failed to fetch user info:', err));
+    fetchUserData();
 
     // Fetch individual favorites (for backward compatibility)
-    fetch(`http://localhost:4000/api/favourite/${userId}`)
-      .then(res => res.json())
-      .then(data => setFavorites(data))
+    fetch(`http://localhost:4000/api/favourite/${userId}`, {
+      headers: getAuthHeaders()
+    })
+      .then(res => {
+        if (handleAuthError(res)) return;
+        return res.json();
+      })
+      .then(data => {
+        if (data) setFavorites(data);
+      })
       .catch(err => console.error('Failed to fetch favorites:', err));
 
     // Fetch favorite lists
     fetchFavoriteLists();
-  }, [userId, fetchFavoriteLists]);
+  }, [userId, token, fetchFavoriteLists, getAuthHeaders, fetchUserData, handleAuthError]);
+
+  // Profile update handlers
+  const handleEditProfile = () => {
+    setIsEditingProfile(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingProfile(false);
+    setProfileData({
+      name: user.name,
+      email: user.email
+    });
+  };
+
+  const handleUpdateProfile = async () => {
+  if (!profileData.name.trim() || !profileData.email.trim()) {
+    alert('Name and email are required');
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(profileData.email)) {
+    alert('Please enter a valid email address');
+    return;
+  }
+
+  setUpdateLoading(true);
+  try {
+    const response = await fetch(`http://localhost:4000/api/user/${userId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(profileData)
+    });
+
+    if (handleAuthError(response)) return;
+
+    if (response.ok) {
+  const updatedUser = await response.json();
+  setUser(updatedUser);
+  setProfileData({
+    name: updatedUser.name,
+    email: updatedUser.email
+  });
+  setIsEditingProfile(false);
+  alert('Profile updated successfully!');
+} else {
+      const errorData = await response.json();
+      alert(errorData.message || 'Failed to update profile');
+    }
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    alert('Failed to update profile');
+  } finally {
+    setUpdateLoading(false);
+  }
+};
 
   const handleManageList = (listId) => {
     setManagingList(listId);
@@ -76,11 +211,13 @@ const Profile = () => {
 
     try {
       for (const bookKey of selectedBooks) {
-        await fetch('http://localhost:4000/api/favourite/remove-from-list', {
+        const response = await fetch('http://localhost:4000/api/favourite/remove-from-list', {
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ listId: managingList, bookKey })
         });
+
+        if (handleAuthError(response)) return;
       }
       
       // Refresh the list
@@ -100,12 +237,13 @@ const Profile = () => {
 
   const handleSaveListName = async () => {
     try {
-      // Note: You'll need to add this route to your server.js
       const response = await fetch(`http://localhost:4000/api/favourite/lists/${editingList}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ name: editListName, userId })
       });
+
+      if (handleAuthError(response)) return;
 
       if (response.ok) {
         fetchFavoriteLists();
@@ -129,9 +267,11 @@ const Profile = () => {
     try {
       const response = await fetch(`http://localhost:4000/api/favourite/lists/${listId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ userId })
       });
+
+      if (handleAuthError(response)) return;
 
       if (response.ok) {
         fetchFavoriteLists();
@@ -147,20 +287,30 @@ const Profile = () => {
   };
 
   const handleCreateNewList = async () => {
-    if (!newListName.trim()) {
+    const trimmedName = newListName.trim();
+
+    if (!trimmedName) {
       alert('Please enter a list name');
+      return;
+    }
+
+    const isDuplicate = favoriteLists.some(
+      (list) => list.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      alert('A list with this name already exists. Please choose a different name.');
       return;
     }
 
     try {
       const response = await fetch('http://localhost:4000/api/favourite/lists', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: newListName.trim(), 
-          userId 
-        })
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ name: trimmedName, userId })
       });
+
+      if (handleAuthError(response)) return;
 
       if (response.ok) {
         fetchFavoriteLists();
@@ -201,8 +351,62 @@ const Profile = () => {
         <div className="profile-info">
           <h1>{user.name}</h1>
           <p>{user.email}</p>
+          <div className="profile-actions">
+            <button 
+              onClick={handleEditProfile}
+              className="edit-profile-btn"
+              disabled={isEditingProfile}
+            >
+              Edit Profile
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Edit Profile Form */}
+      {isEditingProfile && (
+        <div className="update-form-section">
+          <div className="update-form">
+            <h3>Update Profile</h3>
+            <div className="form-group">
+              <label>Name *</label>
+              <input
+                type="text"
+                value={profileData.name}
+                onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter your name..."
+                className="form-input"
+              />
+            </div>
+            <div className="form-group">
+              <label>Email *</label>
+              <input
+                type="email"
+                value={profileData.email}
+                onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Enter your email..."
+                className="form-input"
+              />
+            </div>
+            <div className="form-actions">
+              <button 
+                onClick={handleUpdateProfile} 
+                className="save-btn"
+                disabled={updateLoading}
+              >
+                {updateLoading ? 'Updating...' : 'Update Profile'}
+              </button>
+              <button 
+                onClick={handleCancelEdit} 
+                className="cancel-btn"
+                disabled={updateLoading}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Individual Favorites (Backward Compatibility) */}
       {favorites.length > 0 && (

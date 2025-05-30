@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { FaUserCircle, FaSpinner, FaSignOutAlt } from 'react-icons/fa';
+import { FaComments } from 'react-icons/fa';
 import './App.css';
+import Chatbot from './Chatbot';
 
 const categories = [
   'Romance', 'Mystery', 'Arts', 'Cooking',
@@ -11,6 +13,7 @@ const categories = [
 ];
 
 export default function Home() {
+  const [showChatbot, setShowChatbot] = useState(false);
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Romance');
@@ -51,7 +54,7 @@ const handleSearch = async () => {
 
 const handleLogout = () => {
   // Clear any auth data here
-  localStorage.removeItem('user'); // or sessionStorage, or however you handle login
+  localStorage.removeItem('user'); 
   // Redirect to login page
   navigate('/');
 };
@@ -61,6 +64,7 @@ const handleLogout = () => {
   }, []);
 
   return (
+    <div className='background'>
     <div className="home_container">
         <div className="account-icon">
   <Link to="/profile">
@@ -73,6 +77,12 @@ const handleLogout = () => {
     onClick={handleLogout}
   />
 </div>
+
+<div className="chatbot-float-icon" title="Chat with us" onClick={() => setShowChatbot(!showChatbot)}>
+  <FaComments size={30} />
+</div>
+{showChatbot && <Chatbot closeChatbot={() => setShowChatbot(false)} />}
+
 
       <h1 className="title">Knowledge Is Power</h1>
       
@@ -127,6 +137,7 @@ const handleLogout = () => {
           ))
         )}
       </div>
+    </div>
     </div>
   );
 }

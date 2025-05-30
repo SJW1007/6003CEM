@@ -69,6 +69,41 @@
   color: black;
 }
 
+.profile-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.edit-profile-btn, .change-password-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.edit-profile-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.update-form-section {
+  margin: 30px 0 60px 0; /* Increased bottom margin from 40px to 60px for more spacing */
+  padding: 25px;
+  border: 2px solid #667eea;
+  border-radius: 15px;
+  background-color: white;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+}
+
+.update-form h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+}
+
 .favorites-section h2 {
   font-size: 22px;
   margin-bottom: 20px;
@@ -205,6 +240,7 @@
 .form-actions {
   display: flex;
   gap: 15px;
+  margin-top: 25px;
   justify-content: flex-end;
 }
 
@@ -221,6 +257,47 @@
 
 .create-btn:hover {
   background-color: #45a049;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.save-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.save-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.cancel-btn {
+  background-color: #6c757d;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background-color: #5a6268;
+  transform: translateY(-1px);
 }
 
 /* Favorite Lists */
@@ -286,34 +363,6 @@
   font-size: 16px;
   font-weight: 600;
   min-width: 200px;
-}
-
-.save-btn,
-.cancel-btn {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.2s;
-}
-
-.save-btn {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.save-btn:hover {
-  background-color: #45a049;
-}
-
-.cancel-btn {
-  background-color: #f44336;
-  color: white;
-}
-
-.cancel-btn:hover {
-  background-color: #d32f2f;
 }
 
 .list-description {
@@ -532,6 +581,10 @@
   .form-actions button {
     width: 100%;
   }
+  
+  .update-form-section {
+    margin: 30px 0 50px 0;
+  }
 }
 
 @media (max-width: 480px) {
@@ -555,5 +608,9 @@
   .back-button {
     font-size: 14px;
     padding: 10px 16px;
+  }
+  
+  .update-form-section {
+    margin: 30px 0 40px 0;
   }
 }
