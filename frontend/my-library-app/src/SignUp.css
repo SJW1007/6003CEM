@@ -1,0 +1,110 @@
+/*SignUp.css*/
+.signup-page {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url('library.png');
+}
+
+.signup-container {
+  background-color: #f9f3e9;
+  padding: 40px;
+  border-radius: 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+}
+
+.signup-container h2 {
+  text-align: center;
+  color: #5a3b1f;
+  font-size: 36px;
+  margin-bottom: 30px;
+}
+
+.signup-container label {
+  display: block;
+  color: #5a3b1f;
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.signup-container input {
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  border-bottom: 2px solid #5a3b1f;
+  background: transparent;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.signup-container input:focus {
+  outline: none;
+  border-color: #3e2b15;
+}
+
+.signup-container button {
+  width: 100%;
+  padding: 12px;
+  background-color: #5a3b1f;
+  color: white;
+  font-size: 18px;
+  font-family: 'Georgia', serif;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.signup-container button:hover {
+  background-color: #3e2b15;
+}
+
+.password-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.password-wrapper input {
+  flex: 1;
+  padding-right: 60px;
+}
+
+.password-wrapper span {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #5a3e1b;
+  margin-bottom: 20px;
+}
+
+.error {
+  color: red;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
+.signup-link {
+  text-align: right;
+  margin-top: 10px;
+}
+
+.switch-link {
+  margin-top: 10px;
+  text-align: right;
+  font-size: 14px;
+}
+.switch-link a {
+  color: #4e2c10;
+  text-decoration: none;
+}
+.switch-link a:hover {
+  text-decoration: underline;
+}
+

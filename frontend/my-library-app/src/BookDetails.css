@@ -1,0 +1,97 @@
+/*BookDetails.css*/
+.book_details_container {
+  display: flex;
+  background-color: #f6f0e7;
+  color: #3e2d18; 
+  font-family: 'Georgia', serif;
+  padding: 40px;
+  gap: 40px;
+  min-height: 100vh;
+  position: relative;
+}
+
+.cover-section {
+  flex: 1;
+  text-align: center;
+  background-color: #c7a57b;
+  padding-top: 70px;
+}
+
+.cover-section img {
+  width: 300px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.cover-section h2 {
+  margin-top: 20px;
+  font-size: 26px;
+  font-weight: normal;
+  color: #fff;
+  background-color: #c7a57b;
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+
+.detail-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding:20px;
+}
+
+.detail-section h3 {
+  font-size: 22px;
+  margin-bottom: 0px;
+}
+
+.detail-section p{
+  font-size: 17px;
+  line-height: 1.6;
+  max-width: 700px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+}
+
+.detail-section li {
+  font-size: 17px;
+  line-height: 1.6;
+  max-width: 700px;
+}
+
+.detail-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.related-books {
+  display: flex;
+  gap: 35px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.related-books img {
+  width: 90px;
+  height: 150px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.related-books img:hover {
+  transform: scale(1.05);
+}
+
+.bookmark-icon {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  font-size: 32px;
+  color: #3e2d18;
+  cursor: pointer;
+  z-index: 1000;
+}
+

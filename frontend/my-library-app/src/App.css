@@ -1,0 +1,127 @@
+body {
+  margin: 0;
+  font-family: Georgia, serif;
+  background-image: url('library.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: #f7f0e7;
+}
+
+
+.home_container {
+  text-align: center;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  margin-top: 160px;
+  color: #FFFAEE;
+}
+
+.search-bar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.search-bar input {
+  width: 300px;
+  padding: 10px;
+  border: none;
+  border-radius: 10px 0 0 10px;
+  font-size: 16px;
+}
+
+.search-button {
+  padding: 10px 20px;
+  background-color: #fdf7eb;
+  border: none;
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 140px;
+  margin-top: 50px;
+}
+
+.category-button {
+  background-color: #d9b88d;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.category-button:hover {
+  background-color: #cca872;
+}
+
+.category-button.active {
+  background-color: #796443;
+  color: white;
+}
+
+.book-list {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  background-color: #d9b88d;
+  padding: 30px 10px;
+  flex-wrap: wrap;
+}
+
+.book-card {
+  background-color: white;
+  color: black;
+  border-radius: 12px;
+  padding: 10px;
+  width: 150px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+}
+
+.book-card:hover {
+  background-color: #a6b9b6;
+}
+
+.book-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.no-books-message {
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  color: #fffaf0;
+  margin-top: 40px;
+  padding: 50px;
+  border-radius: 12px;
+}
+
+.account-icon {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: #fdf7eb;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.account-icon:hover {
+  color: #ffffff;
+}
+

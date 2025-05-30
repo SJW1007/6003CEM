@@ -1,0 +1,83 @@
+
+.profile-container {
+  padding: 100px;
+  background-color: #f6f0e7;
+
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 60px;
+}
+
+.profile-image {
+  width: 120px;
+  height: 120px;
+  border: 2px solid #000;
+  border-radius: 50%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-image svg {
+  width: 70px;
+  height: 70px;
+  fill: black;
+}
+
+.profile-info {
+  margin-left: 30px;
+}
+
+.profile-info h1 {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
+  color: black;
+}
+
+.profile-info p {
+  font-size: 18px;
+  margin-top: 8px;
+  color: black;
+}
+
+.favorites-section h2 {
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: black;
+}
+
+.favorites-grid {
+  display: flex;
+  justify-content: left;
+  gap: 80px;
+  padding: 30px 10px;
+  flex-wrap: wrap;
+}
+
+.fav-book-card {
+  background-color: white;
+  color: black;
+  border-radius: 12px;
+  padding: 10px;
+  width: 150px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+}
+
+.fav-book-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.fav-book-card p {
+  font-size: 14px;
+  font-weight: 500;
+}
