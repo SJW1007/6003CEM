@@ -85,7 +85,7 @@
   transform: scale(1.05);
 }
 
-.bookmark-icon {
+.addtolist-icon {
   position: fixed;
   top: 30px;
   right: 30px;
@@ -93,5 +93,384 @@
   color: #3e2d18;
   cursor: pointer;
   z-index: 1000;
+  transition: color 0.2s ease;
 }
 
+.addtolist-icon:hover {
+  color: #c7a57b;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 10px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #3e2d18;
+  font-size: 1.4em;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  color: #666;
+  padding: 5px;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.lists-section h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #3e2d18;
+  font-size: 1.1em;
+}
+
+/* Checkbox List Styles */
+.lists-checkbox-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.list-checkbox-item {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.list-checkbox-item:hover {
+  background-color: #f8f8f8;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  width: 100%;
+  position: relative;
+}
+
+/* Hide default checkbox */
+.list-checkbox {
+  opacity: 0;
+  position: absolute;
+  cursor: pointer;
+}
+
+/* Custom checkbox */
+.checkmark {
+  height: 20px;
+  width: 20px;
+  background-color: #fff;
+  border: 2px solid #c7a57b;
+  border-radius: 3px;
+  margin-right: 12px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+/* Checkmark when checked */
+.list-checkbox:checked ~ .checkmark {
+  background-color: #c7a57b;
+  border-color: #c7a57b;
+}
+
+.list-checkbox:checked ~ .checkmark:after {
+  content: "";
+  position: absolute;
+  display: block;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.list-info {
+  flex: 1;
+}
+
+.list-info h5 {
+  margin: 0 0 4px 0;
+  color: #3e2d18;
+  font-size: 1em;
+}
+
+.list-info p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+  line-height: 1.3;
+}
+
+/* Selected info */
+.selected-info {
+  text-align: center;
+  color: #666;
+  font-size: 0.9em;
+  margin-bottom: 15px;
+  padding: 8px;
+  background-color: #f0f8ff;
+  border-radius: 4px;
+  border-left: 3px solid #c7a57b;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+.add-to-lists-btn,
+.save-changes-btn {
+  background-color: #3e2d18;
+  color: white;
+  border: none;
+  padding: 16px 24px; /* Increased from 12px 20px */
+  border-radius: 8px; /* Slightly more rounded */
+  cursor: pointer;
+  font-size: 1.1em; /* Increased from 1em */
+  font-weight: 600; /* Increased from 500 */
+  transition: all 0.2s ease;
+  order: 1;
+  min-height: 52px; /* Added minimum height for consistency */
+  letter-spacing: 0.5px; /* Added slight letter spacing for better readability */
+}
+
+.add-to-lists-btn:hover:not(:disabled),
+.save-changes-btn:hover:not(:disabled) {
+  background-color: #2a1f10;
+  transform: translateY(-2px); /* Slightly more lift on hover */
+  box-shadow: 0 4px 12px rgba(62, 45, 24, 0.3); /* Added shadow on hover */
+}
+
+.add-to-lists-btn:disabled,
+.save-changes-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.create-list-btn {
+  background-color: transparent;
+  color: #c7a57b;
+  border: 2px solid #c7a57b;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95em;
+  transition: all 0.2s ease;
+  order: 2;
+}
+
+.create-list-btn:hover {
+  background-color: #c7a57b;
+  color: white;
+}
+
+/* Create List Form Styles */
+.create-list-form {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.create-list-form h4 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #3e2d18;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #3e2d18;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1em;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #c7a57b;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: #666;
+  border: 1px solid #ccc;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.submit-btn {
+  background-color: #c7a57b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background-color: #b8966c;
+}
+
+.submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Legacy modal styles for backward compatibility */
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 90%;
+  width: 300px;
+}
+
+.modal ul {
+  list-style: none;
+  padding: 0;
+}
+
+.modal li {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #ccc;
+}
+
+.modal li:hover {
+  background-color: #f5f5f5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .book_details_container {
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .cover-section {
+    padding-top: 20px;
+  }
+  
+  .cover-section img {
+    width: 200px;
+  }
+  
+  .modal-content {
+    max-width: 95%;
+    margin: 10px;
+  }
+  
+  .form-buttons {
+    flex-direction: column;
+  }
+}

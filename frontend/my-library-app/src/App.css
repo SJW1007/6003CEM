@@ -125,3 +125,49 @@ body {
   color: #ffffff;
 }
 
+/* Spinner animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+.spinner.large {
+  font-size: 2rem;
+}
+
+/* Loading container */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.loading-container p {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Disabled button styles */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Image loading placeholder (optional) */
+img {
+  background-color: #f0f0f0;
+  min-height: 200px;
+  transition: opacity 0.3s ease;
+}
+
+img:not([src]) {
+  opacity: 0.5;
+}

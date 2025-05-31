@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const User = require('./models/User');
 const Favourite = require('./models/Favourite');
+const FavouriteList = require('./models/FavouriteList');
 
 const app = express();
 const PORT = 4000;
@@ -133,6 +134,159 @@ app.get('/api/books/title/:title', async (req, res) => {
   } catch (error) {
     console.error('Error searching books by title:', error.message);
     res.status(500).json({ error: 'Failed to search books by title' });
+  }
+});
+
+// ========== FAVOURITE LIST ROUTES ==========
+
+// Create a new favourite list
+app.post('/api/favourite/lists', async (req, res) => {
+  const { userId, name, description } = req.body;
+
+  try {
+    const existingList = await FavouriteList.findOne({ userId, name });
+    if (existingList) {
+      return res.status(400).json({ error: 'List with this name already exists' });
+    }
+
+    const newList = new FavouriteList({ userId, name, description });
+    await newList.save();
+    
+    res.status(201).json({ 
+      message: 'List created successfully', 
+      list: newList 
+    });
+  } catch (err) {
+    console.error('Error creating list:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get all lists for a user
+app.get('/api/favourite/lists/:userId', async (req, res) => {
+  try {
+    const lists = await FavouriteList.find({ userId: req.params.userId })
+      .sort({ createdAt: -1 });
+    res.json(lists);
+  } catch (err) {
+    console.error('Error fetching lists:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Delete a favourite list (and all books in it)
+app.delete('/api/favourite/lists/:listId', async (req, res) => {
+  const { listId } = req.params;
+  const { userId } = req.body;
+
+  try {
+    // Verify the list belongs to the user
+    const list = await FavouriteList.findOne({ _id: listId, userId });
+    if (!list) {
+      return res.status(404).json({ error: 'List not found or unauthorized' });
+    }
+
+    // Delete all favourites in this list
+    await Favourite.deleteMany({ listId });
+    
+    // Delete the list itself
+    await FavouriteList.findByIdAndDelete(listId);
+    
+    res.json({ message: 'List and all its books deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting list:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ========== FAVOURITE BOOK ROUTES ==========
+
+// Add book to a specific list
+app.post('/api/favourite/add-to-list', async (req, res) => {
+  const { userId, bookKey, listId, title, author, cover } = req.body;
+
+  try {
+    // Verify the list belongs to the user
+    const list = await FavouriteList.findOne({ _id: listId, userId });
+    if (!list) {
+      return res.status(404).json({ error: 'List not found or unauthorized' });
+    }
+
+    // Check if book already exists in this list
+    const exists = await Favourite.findOne({ listId, bookKey });
+    if (exists) {
+      return res.status(400).json({ error: 'Book already in this list' });
+    }
+
+    const favourite = new Favourite({ listId, bookKey, title, author, cover });
+    await favourite.save();
+    
+    res.status(201).json({ message: 'Book added to list successfully' });
+  } catch (err) {
+    console.error('Error adding book to list:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get all books in a specific list
+app.get('/api/favourite/list/:listId', async (req, res) => {
+  try {
+    const books = await Favourite.find({ listId: req.params.listId })
+      .sort({ addedAt: -1 });
+    res.json(books);
+  } catch (err) {
+    console.error('Error fetching list books:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update a favourite list name
+app.put('/api/favourite/lists/:listId', async (req, res) => {
+  const { listId } = req.params;
+  const { name, userId } = req.body;
+
+  try {
+    // Verify the list belongs to the user
+    const list = await FavouriteList.findOne({ _id: listId, userId });
+    if (!list) {
+      return res.status(404).json({ error: 'List not found or unauthorized' });
+    }
+
+    // Check if another list with the same name exists for this user
+    const existingList = await FavouriteList.findOne({ 
+      userId, 
+      name, 
+      _id: { $ne: listId } 
+    });
+    if (existingList) {
+      return res.status(400).json({ error: 'List with this name already exists' });
+    }
+
+    // Update the list name
+    list.name = name;
+    await list.save();
+    
+    res.json({ message: 'List name updated successfully', list });
+  } catch (err) {
+    console.error('Error updating list name:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Remove book from a specific list
+app.delete('/api/favourite/remove-from-list', async (req, res) => {
+  const { listId, bookKey } = req.body;
+
+  try {
+    const result = await Favourite.findOneAndDelete({ listId, bookKey });
+    if (!result) {
+      return res.status(404).json({ error: 'Book not found in this list' });
+    }
+    
+    res.json({ message: 'Book removed from list successfully' });
+  } catch (err) {
+    console.error('Error removing book from list:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
