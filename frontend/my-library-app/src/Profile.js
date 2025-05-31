@@ -4,18 +4,19 @@ import { Link } from 'react-router-dom';
 import './Profile.css';
 
 const Profile = () => {
-  const userId = '683819b3e7f410df7ddb3f92'; // Example hardcoded userId – replace with actual logic (e.g., from localStorage or context)
+  const userId = localStorage.getItem('userId');
   const [user, setUser] = useState(null);
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    // Fetch user info
+    if (!userId) return; // Guard clause if userId not found
+
     fetch(`http://localhost:4000/api/user/${userId}`)
+
       .then(res => res.json())
       .then(data => setUser(data))
       .catch(err => console.error('Failed to fetch user info:', err));
 
-    // Fetch favorite books
     fetch(`http://localhost:4000/api/favourite/${userId}`)
       .then(res => res.json())
       .then(data => setFavorites(data))

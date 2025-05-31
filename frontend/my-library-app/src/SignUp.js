@@ -53,7 +53,7 @@ export default function SignUp() {
       const data = await res.json();
       if (res.ok) {
         alert(data.message);
-        navigate('/login'); // Redirect to Login page
+        navigate('/'); // Redirect to Login page
       } else {
         setError(data.error || 'Signup failed');
       }

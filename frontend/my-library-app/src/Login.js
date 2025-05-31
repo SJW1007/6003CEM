@@ -69,7 +69,8 @@ if (res.ok) {
           />
 
           <div className="forgot-password">
-            <a href="#">Forgot Password</a></div>
+            <Link to="/forgetpassword">Forgot Password?</Link>
+          </div>
 
           <button className="login-button" type="submit">Login</button>
         </form>

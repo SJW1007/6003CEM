@@ -41,6 +41,24 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
+app.post('/api/forgetpassword', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 const jwt = require('jsonwebtoken'); // Optional if you want token-based auth
 

@@ -8,9 +8,11 @@ export default function BookDetail() {
   const { bookKey } = useParams(); // e.g., OL12345W
   const [book, setBook] = useState(null);
   const [author, setAuthor] = useState(null);
+  const [googleBook, setGoogleBook] = useState({});// JW: Added googleBook state to store Google Books data
   const [relatedBooks, setRelatedBooks] = useState([]);
   const [bookmarked, setBookmarked] = useState(false);
   const userId = localStorage.getItem('userId'); 
+  
 
   useEffect(() => {
   const storedUserId = localStorage.getItem('userId');
@@ -118,6 +120,37 @@ const res = await fetch(`https://openlibrary.org${decodedKey}.json`);
     fetchBookDetails();
   }, [bookKey]);
 
+//JW added useEffect to fetch Google Books data
+  useEffect(() => {
+  const fetchGoogleBook = async () => {
+    if (!book?.title) return; // wait for book title
+    const title = book.title;
+    const authorName = author?.name;
+
+    const googleUrl = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(title)}${
+      authorName ? `+inauthor:${encodeURIComponent(authorName)}` : ''
+    }`;
+
+    try {
+      const googleRes = await fetch(googleUrl);
+      const googleData = await googleRes.json();
+
+      if (googleData.totalItems > 0) {
+      setGoogleBook(googleData.items[0].volumeInfo);
+      console.log('Google Book info:', googleData.items[0].volumeInfo);
+    } else {
+      console.warn('No matching book found in Google Books for:', title, 'by', authorName);
+      setGoogleBook({});
+    }
+    } catch (err) {
+      console.error('Error fetching Google Book info:', err);
+    }
+  };
+
+  fetchGoogleBook();
+}, [book?.title, author?.name]);
+
+
   if (!book) {
     return <div className="book_details_container"><p>Loading...</p></div>;
   }
@@ -125,6 +158,9 @@ const res = await fetch(`https://openlibrary.org${decodedKey}.json`);
   alert('Please log in to bookmark books.');
   return;
 }
+const getFirstAvailable = (...values) => {
+    return values.find(val => val !== null && val !== undefined && val !== '') || 'Not available';
+  };
 
   return (
     <div className="book_details_container">
@@ -144,33 +180,72 @@ const res = await fetch(`https://openlibrary.org${decodedKey}.json`);
 
 
       <div className="detail-section">
-        {book.isbn_10 && (
-          <p><strong>ISBN 10 :</strong> {book.isbn_10.join(', ')}</p>
-        )}
-        {book.first_publish_date && (
-          <p><strong>Publish Date:</strong> {book.first_publish_date}</p>
-        )}
-        {book.publishers && (
-          <p><strong>Publisher:</strong> {book.publishers[0]}</p>
-        )}
-        {book.languages && book.languages.length > 0 && (
-          <p><strong>Language:</strong> English</p>
-        )}
-        {book.number_of_pages && (
-          <p><strong>Pages:</strong> {book.number_of_pages}</p>
+        {/* ISBN - Show if available from either source */}
+        <p><strong>ISBN 10:</strong> {getFirstAvailable(
+          book.isbn_10?.[0],
+          googleBook.industryIdentifiers?.find(id => id.type === 'ISBN_10')?.identifier
+        )}</p>
+
+        {/* Publish Date */}
+        <p><strong>Publish Date:</strong> {getFirstAvailable(
+          book.first_publish_date,
+          googleBook.publishedDate
+        )}</p>
+
+        {/* Publisher */}
+        <p><strong>Publisher:</strong> {getFirstAvailable(
+          book.publishers?.[0],
+          googleBook.publisher
+        )}</p>
+
+        {/* Pages */}
+        <p><strong>Pages:</strong> {getFirstAvailable(
+          book.number_of_pages,
+          googleBook.pageCount
+        )}</p>
+
+        {/* Rating - Only from Google Books */}
+        {googleBook.averageRating && (
+          <p><strong>Rating:</strong> {googleBook.averageRating} ⭐</p>
         )}
 
-        {book.description && (
-          <>
-            <h3>Description</h3>
-            <p>
-              {typeof book.description === 'string'
-                ? book.description
-                : book.description.value}
-            </p>
-          </>
+        {/* Preview Link */}
+        {googleBook.previewLink && (
+          <p>
+            <strong>Preview:</strong>{' '}
+            <a href={googleBook.previewLink} target="_blank" rel="noopener noreferrer">
+              View on Google Books
+            </a>
+          </p>
         )}
 
+        {/* Language */}
+        <p><strong>Language:</strong> {getFirstAvailable(
+          book.languages?.[0]?.key?.replace('/languages/', '').toUpperCase(),
+          googleBook.language,
+          'Not specified'
+        )}</p>
+
+        {/* Description */}
+        {(() => {
+          const openLibDesc = typeof book.description === 'string' 
+            ? book.description 
+            : book.description?.value;
+          const description = getFirstAvailable(openLibDesc, googleBook.description);
+          
+          if (description !== 'Not available') {
+            return (
+              <>
+                <h3>Description</h3>
+                <p>{description}</p>
+              </>
+            );
+          } else {
+            return <p><em>No description available.</em></p>;
+          }
+        })()}
+
+        {/* Author */}
         {author && (
           <>
             <h3>Author</h3>
@@ -185,23 +260,24 @@ const res = await fetch(`https://openlibrary.org${decodedKey}.json`);
           </>
         )}
 
-{relatedBooks.length > 0 && (
-  <>
-    <h3>Related Books</h3>
-    <div className="related-books">
-      {relatedBooks
-        .filter(book => book.covers && book.covers.length > 0) // Only books with covers
-        .map((item, index) => (
-          <Link to={`/book/${encodeURIComponent(item.key)}`} key={index}>
-            <img
-              src={`https://covers.openlibrary.org/b/id/${item.covers[0]}-M.jpg`}
-              alt={item.title}
-            />
-          </Link>
-        ))}
-    </div>
-  </>
-)}
+        {/* Related Books */}
+        {relatedBooks.length > 0 && (
+          <>
+            <h3>Related Books</h3>
+            <div className="related-books">
+              {relatedBooks
+                .filter(book => book.covers && book.covers.length > 0)
+                .map((item, index) => (
+                  <Link to={`/book/${encodeURIComponent(item.key)}`} key={index}>
+                    <img
+                      src={`https://covers.openlibrary.org/b/id/${item.covers[0]}-M.jpg`}
+                      alt={item.title}
+                    />
+                  </Link>
+                ))}
+            </div>
+          </>
+        )}
 
 
         <Link to="/home" style={{ marginTop: '20px', color: '#3e2d18', textDecoration: 'underline' }}>
