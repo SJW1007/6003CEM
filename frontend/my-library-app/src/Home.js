@@ -23,7 +23,7 @@ export default function Home() {
   const fetchBooksByCategory = async (category) => {
   try {
     setIsLoading(true); // Start loading
-    const res = await fetch(`http://localhost:4000/api/books/subject/${category.toLowerCase()}`);
+    const res = await fetch(`https://six003cem.onrender.com/api/books/subject/${category.toLowerCase()}`);
     const data = await res.json();
     setBooks(data);
     setSelectedCategory(category);
@@ -38,7 +38,7 @@ const handleSearch = async () => {
   if (searchTerm.trim()) {
     try {
       setIsLoading(true); // Start loading
-      const res = await fetch(`http://localhost:4000/api/books/title/${encodeURIComponent(searchTerm)}`);
+      const res = await fetch(`https://six003cem.onrender.com/api/books/title/${encodeURIComponent(searchTerm)}`);
       const data = await res.json();
       setBooks(data);
       setSelectedCategory('');

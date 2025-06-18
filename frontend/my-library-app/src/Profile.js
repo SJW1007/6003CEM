@@ -47,7 +47,7 @@ const Profile = () => {
   }, [navigate]);
 
   const fetchListBooks = useCallback((listId) => {
-    fetch(`http://localhost:4000/api/favourite/list/${listId}`, {
+    fetch(`https://six003cem.onrender.com/api/favourite/list/${listId}`, {
       headers: getAuthHeaders()
     })
       .then(res => {
@@ -67,7 +67,7 @@ const Profile = () => {
 
   const fetchFavoriteLists = useCallback(() => {
     console.log("Fetching favorite lists with token:", token);
-    fetch(`http://localhost:4000/api/favourite/lists/${userId}`, {
+    fetch(`https://six003cem.onrender.com/api/favourite/lists/${userId}`, {
       headers: getAuthHeaders()
     })
       .then(res => {
@@ -85,7 +85,7 @@ const Profile = () => {
 
   // Fetch user data
   const fetchUserData = useCallback(() => {
-  fetch(`http://localhost:4000/api/user/${userId}`, {
+  fetch(`https://six003cem.onrender.com/api/user/${userId}`, {
     headers: getAuthHeaders()
   })
     .then(res => {
@@ -121,7 +121,7 @@ const Profile = () => {
     fetchUserData();
 
     // Fetch individual favorites (for backward compatibility)
-    fetch(`http://localhost:4000/api/favourite/${userId}`, {
+    fetch(`https://six003cem.onrender.com/favourite/${userId}`, {
       headers: getAuthHeaders()
     })
       .then(res => {
@@ -164,7 +164,7 @@ const Profile = () => {
 
   setUpdateLoading(true);
   try {
-    const response = await fetch(`http://localhost:4000/api/user/${userId}`, {
+    const response = await fetch(`https://six003cem.onrender.com/api/user/${userId}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(profileData)
@@ -211,7 +211,7 @@ const Profile = () => {
 
     try {
       for (const bookKey of selectedBooks) {
-        const response = await fetch('http://localhost:4000/api/favourite/remove-from-list', {
+        const response = await fetch('https://six003cem.onrender.com/api/favourite/remove-from-list', {
           method: 'DELETE',
           headers: getAuthHeaders(),
           body: JSON.stringify({ listId: managingList, bookKey })
@@ -237,7 +237,7 @@ const Profile = () => {
 
   const handleSaveListName = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/favourite/lists/${editingList}`, {
+      const response = await fetch(`https://six003cem.onrender.com/api/favourite/lists/${editingList}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({ name: editListName, userId })
@@ -265,7 +265,7 @@ const Profile = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/api/favourite/lists/${listId}`, {
+      const response = await fetch(`https://six003cem.onrender.com/api/favourite/lists/${listId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
         body: JSON.stringify({ userId })
@@ -304,7 +304,7 @@ const Profile = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:4000/api/favourite/lists', {
+      const response = await fetch('https://six003cem.onrender.com/api/favourite/lists', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ name: trimmedName, userId })

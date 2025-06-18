@@ -40,15 +40,15 @@ export default function SignUp() {
     }
 
     try {
-      const res = await fetch('http://localhost:4000/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
-        })
-      });
+  const res = await fetch('https://six003cem.onrender.com/api/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password
+    })
+  });
 
       const data = await res.json();
       if (res.ok) {

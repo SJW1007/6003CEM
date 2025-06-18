@@ -136,7 +136,7 @@ const searchBookOnOpenLibrary = async (title, author) => {
     setShowExamples(false); // Hide examples after first message
 
     try {
-      const res = await fetch('http://localhost:4000/api/chatbot', {
+      const res = await fetch('https://six003cem.onrender.com/api/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: messageText })

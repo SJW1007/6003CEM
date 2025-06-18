@@ -11,6 +11,7 @@ export default function BookDetail() {
   const [googleBook, setGoogleBook] = useState({});
   const [relatedBooks, setRelatedBooks] = useState([]);
   const [bookmarked, setBookmarked] = useState(false);
+  const API_URL = 'https://six003cem.onrender.com';
   
   // Authentication state
   const [userId, setUserId] = useState(null);
@@ -524,7 +525,7 @@ const logTranslationContent = (content, stage) => {
     try {
       logToTerminal('🔍 Checking bookmark status for book:', bookKey);
       
-      const res = await authenticatedFetch(`http://localhost:4000/api/favourite/lists/${userId}`);
+      const res = await authenticatedFetch(`${API_URL}/api/favourite/lists/${userId}`);
       if (!res) {
         logToTerminal('❌ Failed to fetch user lists');
         return;
@@ -537,7 +538,7 @@ const logTranslationContent = (content, stage) => {
       
       for (const list of lists) {
         try {
-          const listRes = await authenticatedFetch(`http://localhost:4000/api/favourite/list/${list._id}`);
+          const listRes = await authenticatedFetch(`${API_URL}/api/favourite/list/${list._id}`);
           if (!listRes) continue;
           
           const listBooks = await listRes.json();
@@ -969,7 +970,7 @@ const storeOriginalContent = useCallback(() => {
     }
     
     try {
-      const res = await authenticatedFetch(`http://localhost:4000/api/favourite/lists/${userId}`);
+      const res = await authenticatedFetch(`${API_URL}api/favourite/lists/${userId}`);
       if (!res) return;
       
       const lists = await res.json();
@@ -988,7 +989,7 @@ const storeOriginalContent = useCallback(() => {
       const listsWithBook = [];
       
       for (const list of lists) {
-        const res = await authenticatedFetch(`http://localhost:4000/api/favourite/list/${list._id}`);
+        const res = await authenticatedFetch(`${API_URL}api/favourite/list/${list._id}`);
         if (!res) continue;
         
         const listBooks = await res.json();
@@ -1035,7 +1036,7 @@ const storeOriginalContent = useCallback(() => {
             cover: book.covers?.[0] || null
           };
           
-          const res = await authenticatedFetch('http://localhost:4000/api/favourite/add-to-list', {
+          const res = await authenticatedFetch(`${API_URL}/api/favourite/add-to-list`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -1060,7 +1061,7 @@ const storeOriginalContent = useCallback(() => {
 
       for (const listId of listsToRemoveFrom) {
         try {
-          const res = await authenticatedFetch('http://localhost:4000/api/favourite/remove-from-list', {
+          const res = await authenticatedFetch(`${API_URL}/api/favourite/remove-from-list`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1129,7 +1130,7 @@ const storeOriginalContent = useCallback(() => {
         description: ''
       };
 
-      const res = await authenticatedFetch('http://localhost:4000/api/favourite/lists', {
+      const res = await authenticatedFetch(`${API_URL}/api/favourite/lists`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -1144,7 +1145,7 @@ const storeOriginalContent = useCallback(() => {
         return;
       }
 
-      const listsRes = await authenticatedFetch(`http://localhost:4000/api/favourite/lists/${userId}`);
+      const listsRes = await authenticatedFetch(`${API_URL}/api/favourite/lists/${userId}`);
       if (listsRes) {
         const updatedLists = await listsRes.json();
         setUserLists(updatedLists);
