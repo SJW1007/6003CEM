@@ -515,6 +515,80 @@ app.get('/api/favourite/:userId', authenticateToken, async (req, res) => {
   }
 });
 
+// Update user profile
+app.put('/api/user/:userId', authenticateToken, async (req, res) => {
+  console.log('✏️ UPDATE USER PROFILE');
+  console.log('User from token:', req.user);
+  console.log('Requested userId:', req.params.userId);
+  console.log('Request body:', req.body);
+  
+  try {
+    // Verify user can only update their own profile
+    if (req.params.userId !== req.user.userId) {
+      console.log('❌ Access denied - userId mismatch');
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { name, email } = req.body;
+
+    // Validate input
+    if (!name || !email) {
+      return res.status(400).json({ error: 'Name and email are required' });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Please enter a valid email address' });
+    }
+
+    // Check if email is already taken by another user
+    const existingUser = await User.findOne({ 
+      email: email, 
+      _id: { $ne: req.params.userId } 
+    });
+    
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email is already taken by another user' });
+    }
+
+    // Check if name is already taken by another user
+    const existingName = await User.findOne({ 
+      name: name, 
+      _id: { $ne: req.params.userId } 
+    });
+    
+    if (existingName) {
+      return res.status(400).json({ error: 'Username is already taken by another user' });
+    }
+
+    // Update the user
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.userId,
+      { name, email },
+      { new: true, runValidators: true }
+    ).select('name email');
+
+    if (!updatedUser) {
+      console.log('❌ User not found');
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    console.log('✅ User profile updated:', updatedUser);
+    res.json(updatedUser);
+  } catch (err) {
+    console.error('❌ Error updating user profile:', err);
+    
+    // Handle MongoDB validation errors
+    if (err.name === 'ValidationError') {
+      const errors = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ error: errors.join(', ') });
+    }
+    
+    res.status(500).json({ error: 'Server error while updating profile' });
+  }
+});
+
 app.post('/api/chatbot', async (req, res) => {
   const userMessage = req.body.message;
 
