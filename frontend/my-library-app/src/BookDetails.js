@@ -104,10 +104,8 @@ export default function BookDetail() {
     }
   };
 
-  // ENHANCED LOGGING UTILITIES - Terminal + Console output
-  // ENHANCED LOGGING UTILITIES - Better browser + terminal output
 const logToTerminal = (message, data = null) => {
-  const timestamp = new Date().toISOString().slice(11, 23); // HH:MM:SS.mmm format
+  const timestamp = new Date().toISOString().slice(11, 23);
   const formattedMessage = `[${timestamp}] ${message}`;
   
   if (data) {
@@ -292,7 +290,6 @@ const logTranslationContent = (content, stage) => {
     }
   }, [getAuthHeaders, handleAuthError]);
 
-  // ENHANCED: publisher extraction helper with detailed logging
   // ISBN 10 extraction helper
   const getISBN10Value = useCallback(() => {
     const openLibISBN = book?.isbn_10?.[0];
@@ -502,7 +499,7 @@ const logTranslationContent = (content, stage) => {
     return relatedBooks;
   }, [relatedBooks]);
 
-  // DEBUG: Biography tracking function
+  // Biography tracking function
   const debugBiographyFlow = (stage, data) => {
     const timestamp = new Date().toISOString().slice(11, 23);
     console.group(`👤 [${timestamp}] BIOGRAPHY DEBUG - ${stage.toUpperCase()}`);
@@ -562,10 +559,11 @@ const logTranslationContent = (content, stage) => {
     }
   }, [userId, bookKey, token, authenticatedFetch]);
 
-  // Improved batch translate with better error handling
+  //Google translate with error handling
   const batchTranslateTexts = async (texts, targetLanguage) => {
     try {
       logToTerminal(`🌐 Sending ${texts.length} texts to Google Translate API`);
+      const key = 'AIzaSyBm4upvH8HrLToVqWByJ5DhNtOwIxLvdrY';
       
       const validTexts = texts.filter(text => text && text.trim());
       
@@ -574,7 +572,7 @@ const logTranslationContent = (content, stage) => {
       }
 
       const response = await fetch(
-        `https://translation.googleapis.com/language/translate/v2?key=AIzaSyBm4upvH8HrLToVqWByJ5DhNtOwIxLvdrY`,
+        `https://translation.googleapis.com/language/translate/v2?key=${key}`,
         {
           method: 'POST',
           headers: {
@@ -604,281 +602,170 @@ const logTranslationContent = (content, stage) => {
     }
   };
 
-  // FIXED: Store original content with better timing and detailed logging
-  // FIXED: Store original content with better timing and detailed logging
+  // Store original content with better timing and detailed logging
 const storeOriginalContent = useCallback(() => {
-  debugBiographyFlow('STORE_START', { hasBook: !!book, hasAuthor: !!author });
+  console.log('\n🔄 STORING ORIGINAL CONTENT (ENHANCED)');
   
-  // FIXED: Only store when we have complete data
   if (!book) {
-    logToTerminal('❌ No book data available for storing original content');
+    console.log('❌ No book data available');
     return;
   }
 
-  logToTerminal('\n🔄 STORING ORIGINAL CONTENT');
-  logToTerminal('═'.repeat(60));
+  // Wait for author data if it's still loading
+  if (book.authors && book.authors.length > 0 && !author) {
+    console.log('⏳ Author data still loading, deferring storage...');
+    setTimeout(() => storeOriginalContent(), 500);
+    return;
+  }
 
-  // Get description with enhanced source tracking
+  const contentToStore = {};
+  
+  // Title
+  contentToStore.title = book.title;
+  console.log('✅ Title stored:', !!contentToStore.title);
+  
+  // Description
   const openLibDesc = typeof book.description === 'string' 
     ? book.description 
     : book.description?.value;
   const googleDesc = googleBook.description;
-  const finalDescription = openLibDesc || googleDesc;
+  contentToStore.description = openLibDesc || googleDesc;
+  console.log('✅ Description stored:', !!contentToStore.description);
   
-  logDataSource('Description', 
-    openLibDesc ? `"${openLibDesc.substring(0, 100)}..."` : null,
-    googleDesc ? `"${googleDesc.substring(0, 100)}..."` : null,
-    finalDescription ? `"${finalDescription.substring(0, 100)}..."` : null,
-    openLibDesc ? '📚 OpenLibrary' : googleDesc ? '🌐 Google Books' : '❌ None'
-  );
-
-  // ENHANCED: Get author bio with proper handling and detailed logging
-  let authorBio = null;
-  let authorName = null;
-  
+  // Author handling with detailed logging
   if (author) {
-    // Handle author name
-    authorName = author.name;
-    logDataSource('Author Name', authorName, 'N/A', authorName, '📚 OpenLibrary');
+    // Author name
+    contentToStore.authorName = author.name;
+    console.log('✅ Author name stored:', contentToStore.authorName);
     
-    // Handle author biography with enhanced detection
+    // Author biography with multiple fallback strategies
+    let authorBio = null;
+    
     if (author.bio) {
-      if (typeof author.bio === 'string') {
-        authorBio = author.bio;
-        logToTerminal('\n👤 AUTHOR BIOGRAPHY SOURCE ANALYSIS');
-        logToTerminal('═'.repeat(50));
-        logToTerminal('📚 Source: OpenLibrary Author API (string type)');
-        logToTerminal('📝 Type: string');
-        logToTerminal(`✅ Content Preview: "${authorBio.substring(0, 100)}..."`);
-        logToTerminal(`📏 Length: ${authorBio.length} characters`);
-        logToTerminal('═'.repeat(50));
-      } else if (author.bio.value) {
-        authorBio = author.bio.value;
-        logToTerminal('\n👤 AUTHOR BIOGRAPHY SOURCE ANALYSIS');
-        logToTerminal('═'.repeat(50));
-        logToTerminal('📚 Source: OpenLibrary Author API (object type)');
-        logToTerminal('📝 Type: object with value property');
-        logToTerminal(`✅ Content Preview: "${authorBio.substring(0, 100)}..."`);
-        logToTerminal(`📏 Length: ${authorBio.length} characters`);
-        logToTerminal('═'.repeat(50));
+      if (typeof author.bio === 'string' && author.bio.trim()) {
+        authorBio = author.bio.trim();
+        console.log('✅ Author bio stored (string):', authorBio.substring(0, 50) + '...');
+      } else if (author.bio.value && typeof author.bio.value === 'string' && author.bio.value.trim()) {
+        authorBio = author.bio.value.trim();
+        console.log('✅ Author bio stored (object.value):', authorBio.substring(0, 50) + '...');
+      } else if (author.bio.text && typeof author.bio.text === 'string' && author.bio.text.trim()) {
+        authorBio = author.bio.text.trim();
+        console.log('✅ Author bio stored (object.text):', authorBio.substring(0, 50) + '...');
       } else {
-        logToTerminal('\n👤 AUTHOR BIOGRAPHY SOURCE ANALYSIS');
-        logToTerminal('═'.repeat(50));
-        logToTerminal('❌ Biography object exists but no string/value found');
-        logToTerminal('🔍 Biography object structure:', author.bio);
-        logToTerminal('═'.repeat(50));
+        console.log('❌ Author bio object exists but no usable text found');
+        console.log('   Bio structure:', author.bio);
       }
     } else {
-      logToTerminal('\n👤 AUTHOR BIOGRAPHY SOURCE ANALYSIS');
-      logToTerminal('═'.repeat(50));
-      logToTerminal('❌ No biography property found in author object');
-      logToTerminal('🔍 Available author properties:', Object.keys(author));
-      logToTerminal('═'.repeat(50));
+      console.log('❌ No author.bio property found');
     }
+    
+    contentToStore.authorBio = authorBio;
   } else {
-    logToTerminal('\n👤 AUTHOR BIOGRAPHY SOURCE ANALYSIS');
-    logToTerminal('═'.repeat(50));
-    logToTerminal('❌ No author object available');
-    logToTerminal('═'.repeat(50));
+    console.log('❌ No author object available');
+    console.log('   Book authors array:', book.authors);
   }
   
-  // Get publisher using the improved getter
-  const publisher = getPublisherValue();
-  const Bio = getAuthorBiographyValue();
-  const Name = getAuthorNameValue();
-  const pages = getPagesValue();
-  const isbn10 = getISBN10Value();
-  const publishDate = getPublishDateValue();
-  const language = getLanguageValue();
-  const description = getDescriptionValue();
-
-  // Get language with enhanced source tracking
+  // Publisher
+  contentToStore.publisher = getPublisherValue();
+  console.log('✅ Publisher stored:', contentToStore.publisher);
+  
+  // Language
   const openLibLang = book.languages?.[0]?.key?.replace('/languages/', '').toUpperCase();
   const googleLang = googleBook.language;
-  const finalLanguage = openLibLang || googleLang;
+  contentToStore.language = openLibLang || googleLang;
+  console.log('✅ Language stored:', contentToStore.language);
   
-  logDataSource('Language', 
-    openLibLang, 
-    googleLang, 
-    finalLanguage,
-    openLibLang ? '📚 OpenLibrary' : googleLang ? '🌐 Google Books' : '❌ None'
-  );
-
-  const contentToStore = {
-    title: book.title,
-    description: finalDescription && finalDescription !== 'Not available' ? finalDescription : null,
-    authorBio: authorBio, // This is now properly handled
-    authorName: authorName,
-    publisher: publisher,
-    language: finalLanguage
-  };
-
-  debugBiographyFlow('STORE_END', { 
-    contentKeys: Object.keys(contentToStore),
-    hasBio: !!contentToStore.authorBio,
-    bioLength: contentToStore.authorBio?.length 
+  console.log('\n📦 FINAL CONTENT TO STORE:');
+  Object.entries(contentToStore).forEach(([key, value]) => {
+    console.log(`   ${key}: ${value ? (typeof value === 'string' && value.length > 50 ? 'Available (long text)' : value) : 'Not available'}`);
   });
-
-  logToTerminal('\n📦 FINAL ORIGINAL CONTENT PACKAGE');
-  logToTerminal('═'.repeat(60));
-  logTranslationContent(contentToStore, 'STORED');
   
   setOriginalContent(contentToStore);
-}, [book, author, googleBook.description, googleBook.language, getPublisherValue, getAuthorBiographyValue]);
+}, [book, author, googleBook.description, googleBook.language, getPublisherValue]);
 
-  // FIXED: Handle comprehensive translation with biography included
+  // Handle comprehensive translation with biography included
   const handleInPlaceTranslation = async () => {
-    if (isTranslated) {
-      logToTerminal('\n🔄 REVERTING TO ORIGINAL CONTENT');
-      logToTerminal('═'.repeat(50));
-      setIsTranslated(false);
-      setTranslationError('');
-      return;
-    }
-
-    logToTerminal('\n🌐 STARTING TRANSLATION PROCESS');
-    logToTerminal('═'.repeat(60));
-    logToTerminal(`🎯 Target Language: ${translationLanguage} (${availableLanguages.find(l => l.code === translationLanguage)?.name})`);
-    
-    // ADD DEBUG CHECK for original content
-    logToTerminal('🔍 CHECKING ORIGINAL CONTENT BEFORE TRANSLATION:');
-    logToTerminal('Original Content Keys:', Object.keys(originalContent));
-    logToTerminal('Has Author Bio:', !!originalContent.authorBio);
-    if (originalContent.authorBio) {
-      logToTerminal('Author Bio Preview:', originalContent.authorBio.substring(0, 100) + '...');
-    }
-    logToTerminal('Author Object Available:', !!author);
-    
-    // Log what we're starting with
-    logTranslationContent(originalContent, 'ORIGINAL TO TRANSLATE');
-
-    setTranslationLoading(true);
+  if (isTranslated) {
+    setIsTranslated(false);
     setTranslationError('');
+    return;
+  }
+
+  console.log('\n🌐 STARTING ENHANCED TRANSLATION');
+  
+  setTranslationLoading(true);
+  setTranslationError('');
+  
+  try {
+    const textsToTranslate = [];
+    const textKeys = [];
     
-    try {
-      const newTranslatedContent = {};
-      
-      const textsToTranslate = [];
-      const textKeys = [];
-
-      // Content texts with detailed logging
-      logToTerminal('\n📋 PREPARING CONTENT FOR TRANSLATION');
-      logToTerminal('═'.repeat(50));
-      
-      if (originalContent.title) {
-        textsToTranslate.push(originalContent.title);
-        textKeys.push('title');
-        logToTerminal('✅ Title added for translation');
-      }
-      
-      if (originalContent.description) {
-        const truncatedDesc = originalContent.description.length > 1000 
-          ? originalContent.description.substring(0, 1000) + '...' 
-          : originalContent.description;
-        textsToTranslate.push(truncatedDesc);
-        textKeys.push('description');
-        logToTerminal(`✅ Description added for translation (${truncatedDesc.length} chars)`);
-      }
-      
-      // FIXED: Proper author biography handling for translation
-      if (originalContent.authorBio) {
-        const truncatedBio = originalContent.authorBio.length > 800 
-          ? originalContent.authorBio.substring(0, 800) + '...' 
-          : originalContent.authorBio;
-        textsToTranslate.push(truncatedBio);
-        textKeys.push('authorBio');
-        logToTerminal('✅ Author biography added for translation');
-        logToTerminal(`   📝 Biography length: ${truncatedBio.length} characters`);
-        logToTerminal(`   📖 Biography preview: "${truncatedBio.substring(0, 100)}..."`);
+    // Build translation arrays with validation
+    const addForTranslation = (text, key) => {
+      if (text && typeof text === 'string' && text.trim()) {
+        textsToTranslate.push(text.trim());
+        textKeys.push(key);
+        console.log(`✅ Added for translation - ${key}: "${text.substring(0, 30)}..."`);
+        return true;
       } else {
-        logToTerminal('❌ No author biography available for translation');
-        logToTerminal('   🔍 Original content authorBio:', originalContent.authorBio);
-        logToTerminal('   🔍 Author object bio:', author?.bio);
+        console.log(`❌ Skipped translation - ${key}: invalid text`);
+        return false;
       }
-
-      if (originalContent.authorName) {
-        textsToTranslate.push(originalContent.authorName);
-        textKeys.push('authorName');
-        logToTerminal('✅ Author name added for translation');
-      }
-
-      if (originalContent.publisher) {
-        textsToTranslate.push(originalContent.publisher);
-        textKeys.push('publisher');
-        logToTerminal('✅ Publisher added for translation');
-      }
-
-      logToTerminal('═'.repeat(50));
-      logToTerminal(`📊 TRANSLATION SUMMARY:`);
-      logToTerminal(`   📝 Content texts to translate: ${textsToTranslate.length}`);
-      logToTerminal(`   🏷️ Content keys: [${textKeys.join(', ')}]`);
-      logToTerminal(`   🌍 Target language: ${translationLanguage}`);
-      logToTerminal('═'.repeat(50));
-
-      // UI texts
-      const uiTextValues = Object.values(uiTexts.en);
-      const uiTextKeys = Object.keys(uiTexts.en);
-      
-      const allTexts = [...textsToTranslate, ...uiTextValues];
-      const allKeys = [...textKeys, ...uiTextKeys.map(key => `ui_${key}`)];
-
-      logToTerminal(`🔄 Sending ${allTexts.length} texts to Google Translate API`);
-      logToTerminal(`   📝 Content texts: ${textsToTranslate.length}`);
-      logToTerminal(`   🖥️ UI texts: ${uiTextValues.length}`);
-
-      if (textsToTranslate.length === 0) {
-        logToTerminal('❌ ERROR: No content texts to translate');
-        setTranslationError('No content available to translate');
-        return;
-      }
-
-      const translations = await batchTranslateTexts(allTexts, translationLanguage);
-      logToTerminal(`✅ Received ${translations.length} translations from API`);
-
-      // Map translations back to their keys with detailed logging
-      logToTerminal('\n🔄 MAPPING TRANSLATIONS');
-      logToTerminal('═'.repeat(50));
-      
-      translations.forEach((translation, index) => {
-        const key = allKeys[index];
-        if (key.startsWith('ui_')) {
-          if (!newTranslatedContent.uiTexts) {
-            newTranslatedContent.uiTexts = {};
-          }
-          newTranslatedContent.uiTexts[key.replace('ui_', '')] = translation;
-        } else {
-          newTranslatedContent[key] = translation;
-          logToTerminal(`✅ Mapped translation for: ${key}`);
-          
-          // Special logging for author biography
-          if (key === 'authorBio') {
-            logToTerminal(`   📖 Original bio preview: "${originalContent.authorBio?.substring(0, 100)}..."`);
-            logToTerminal(`   🌐 Translated bio preview: "${translation.substring(0, 100)}..."`);
-          }
-        }
-      });
-
-      logToTerminal('═'.repeat(50));
-      logToTerminal('🎉 TRANSLATION COMPLETED SUCCESSFULLY');
-      logTranslationContent(newTranslatedContent, 'FINAL TRANSLATED');
-      
-      setTranslatedContent(newTranslatedContent);
-      setIsTranslated(true);
-    } catch (error) {
-      logToTerminal('\n❌ TRANSLATION ERROR');
-      logToTerminal('═'.repeat(50));
-      logToTerminal('Translation failed:', error);
-      logToTerminal('═'.repeat(50));
-      setTranslationError('Translation failed. Please try again.');
-    } finally {
-      setTranslationLoading(false);
+    };
+    
+    // Add content for translation
+    addForTranslation(originalContent.title, 'title');
+    addForTranslation(originalContent.description, 'description');
+    addForTranslation(originalContent.authorName, 'authorName');
+    addForTranslation(originalContent.authorBio, 'authorBio');
+    addForTranslation(originalContent.publisher, 'publisher');
+    
+    console.log(`\n📊 TRANSLATION BATCH: ${textsToTranslate.length} items`);
+    
+    if (textsToTranslate.length === 0) {
+      throw new Error('No valid content to translate');
     }
-  };
+    
+    // Add UI texts
+    const uiTextValues = Object.values(uiTexts.en);
+    const uiTextKeys = Object.keys(uiTexts.en);
+    
+    const allTexts = [...textsToTranslate, ...uiTextValues];
+    const allKeys = [...textKeys, ...uiTextKeys.map(key => `ui_${key}`)];
+    
+    // Perform translation
+    const translations = await batchTranslateTexts(allTexts, translationLanguage);
+    
+    // Map translations back
+    const newTranslatedContent = { uiTexts: {} };
+    
+    translations.forEach((translation, index) => {
+      const key = allKeys[index];
+      if (key.startsWith('ui_')) {
+        newTranslatedContent.uiTexts[key.replace('ui_', '')] = translation;
+      } else {
+        newTranslatedContent[key] = translation;
+        console.log(`✅ Translation mapped - ${key}: "${translation.substring(0, 30)}..."`);
+      }
+    });
+    
+    console.log('\n🎉 TRANSLATION COMPLETED');
+    console.log('   Translated content keys:', Object.keys(newTranslatedContent));
+    
+    setTranslatedContent(newTranslatedContent);
+    setIsTranslated(true);
+    
+  } catch (error) {
+    console.error('❌ Translation failed:', error);
+    setTranslationError('Translation failed: ' + error.message);
+  } finally {
+    setTranslationLoading(false);
+  }
+};
 
-  // ENHANCED: Get display content with improved logging
+  //  Get display content with improved logging
   const getDisplayContent = () => {
-  // ⭐ ADD THIS SECTION - Call all your data analysis functions
-  // This will trigger all the console logs you want to see
+  //  Call all your data analysis functions
   const isbn10 = getISBN10Value();
   const publishDate = getPublishDateValue();
   const publisher = getPublisherValue();
@@ -970,7 +857,7 @@ const storeOriginalContent = useCallback(() => {
     }
     
     try {
-      const res = await authenticatedFetch(`${API_URL}api/favourite/lists/${userId}`);
+      const res = await authenticatedFetch(`${API_URL}/api/favourite/lists/${userId}`);
       if (!res) return;
       
       const lists = await res.json();
@@ -989,7 +876,7 @@ const storeOriginalContent = useCallback(() => {
       const listsWithBook = [];
       
       for (const list of lists) {
-        const res = await authenticatedFetch(`${API_URL}api/favourite/list/${list._id}`);
+        const res = await authenticatedFetch(`${API_URL}/api/favourite/list/${list._id}`);
         if (!res) continue;
         
         const listBooks = await res.json();
@@ -1016,6 +903,7 @@ const storeOriginalContent = useCallback(() => {
     });
   };
 
+  //add book to list and delete book from list
   const saveListChanges = async () => {
     setSavingChanges(true);
     const errors = [];
@@ -1036,7 +924,7 @@ const storeOriginalContent = useCallback(() => {
             cover: book.covers?.[0] || null
           };
           
-          const res = await authenticatedFetch(`${API_URL}/api/favourite/add-to-list`, {
+          const res = await authenticatedFetch('${API_URL}/api/favourite/add-to-list', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -1116,60 +1004,117 @@ const storeOriginalContent = useCallback(() => {
   };
 
   const handleCreateList = async (e) => {
-    e.preventDefault();
-    if (!newListName.trim()) {
-      alert('Please enter a list name');
+  e.preventDefault();
+  if (!newListName.trim()) {
+    alert('Please enter a list name');
+    return;
+  }
+
+  setCreateListLoading(true);
+  
+  try {
+    const payload = {
+      userId,
+      name: newListName.trim(),
+      description: ''
+    };
+
+    const res = await authenticatedFetch(`${API_URL}/api/favourite/lists`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res) {
+      setCreateListLoading(false);
+      alert('Network error. Please try again.');
       return;
     }
 
-    setCreateListLoading(true);
-    try {
-      const payload = {
-        userId,
-        name: newListName.trim(),
-        description: ''
-      };
-
-      const res = await authenticatedFetch(`${API_URL}/api/favourite/lists`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res) return;
-
-      const result = await res.json();
-      
-      if (!res.ok) {
+    const result = await res.json();
+    
+    if (!res.ok) {
+      setCreateListLoading(false);
+      // Handle specific error cases
+      if (result.error && result.error.toLowerCase().includes('already exists')) {
+        alert('A list with this name already exists. Please choose a different name.');
+        // Clear the input field so user can enter a new name
+        setNewListName('');
+        // DON'T call setShowCreateList(false) - keep the form open
+        return; // Exit early but keep the create list form open
+      } else {
         alert(result.error || 'Failed to create list');
+        // For other errors, also keep the form open
         return;
       }
+    }
 
+    // SUCCESS PATH - Only execute this if list creation was successful
+    try {
       const listsRes = await authenticatedFetch(`${API_URL}/api/favourite/lists/${userId}`);
-      if (listsRes) {
+      if (listsRes && listsRes.ok) {
         const updatedLists = await listsRes.json();
         setUserLists(updatedLists);
+        
+        // Only call checkBookInLists if we successfully got the updated lists
         await checkBookInLists(updatedLists);
       }
-      
-      setNewListName('');
-      setShowCreateList(false);
-      
-      alert('List created successfully!');
-    } catch (err) {
-      console.error('Create list error:', err);
-      alert('Error creating list. Please try again.');
-    } finally {
-      setCreateListLoading(false);
+    } catch (fetchError) {
+      console.error('Error fetching updated lists:', fetchError);
+      // Even if fetching fails, the list was created successfully
     }
-  };
+    
+    // Only reset form and close if successful
+    setNewListName('');
+    setShowCreateList(false); // Close the create list form
+    setCreateListLoading(false);
+    
+    alert('List created successfully!');
+    
+  } catch (err) {
+    console.error('Create list error:', err);
+    setCreateListLoading(false);
+    alert('Error creating list. Please try again.');
+    // Don't close the form on network errors either
+  }
+};
+
+  const handleModalOverlayClick = () => {
+  // Don't close modal if we're in the middle of creating a list or saving changes
+  if (createListLoading || savingChanges) {
+    return;
+  }
+  setShowModal(false);
+};
+
+// Add these helper functions to better manage modal state
+const handleCloseModal = () => {
+  // Don't close if we're in the middle of operations
+  if (createListLoading || savingChanges) {
+    return;
+  }
+  
+  // Reset create list form when closing modal
+  setShowCreateList(false);
+  setNewListName('');
+  setShowModal(false);
+};
+
+const handleBackToLists = () => {
+  // Don't go back if we're creating a list
+  if (createListLoading) {
+    return;
+  }
+  
+  setShowCreateList(false);
+  setNewListName('');
+};
 
   const hasChanges = () => {
     return JSON.stringify(selectedLists.sort()) !== JSON.stringify(initialSelectedLists.sort());
   };
 
-  // ENHANCED: Store original content when data is available
-  // ENHANCED: Store original content when data is available - FIXED VERSION
+  //Store original content when data is available
 useEffect(() => {
   // Wait for both book and author data to be available
   if (book && author && Object.keys(originalContent).length === 0) {
@@ -1229,7 +1174,7 @@ useEffect(() => {
     initAuth();
   }, [checkAuth]);
 
-  // ENHANCED: Check bookmark status after authentication is complete
+  // Check bookmark status after authentication is complete
   useEffect(() => {
     if (!isAuthLoading && userId && bookKey && token) {
       console.log('🔍 Authentication complete, checking bookmark status');
@@ -1307,10 +1252,6 @@ useEffect(() => {
     return <div className="book_details_container"><p>{getUIText('loadingBookDetails')}</p></div>;
   }
 
-  const getFirstAvailable = (...values) => {
-    return values.find(val => val !== null && val !== undefined && val !== '') || getUIText('notAvailable');
-  };
-
   const displayContent = getDisplayContent();
 
   return (
@@ -1387,14 +1328,14 @@ useEffect(() => {
 
       {/* Lists Modal */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{getUIText('manageListsTitle')}</h3>
-              <button className="close-btn" onClick={() => setShowModal(false)}>
-                <FaTimes />
-              </button>
-            </div>
+  <div className="modal-overlay" onClick={handleCloseModal}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-header">
+        <h3>{getUIText('manageListsTitle')}</h3>
+        <button className="close-btn" onClick={handleCloseModal}>
+          <FaTimes />
+        </button>
+      </div>
 
             <div className="modal-body">
               {!showCreateList ? (
@@ -1448,118 +1389,107 @@ useEffect(() => {
                   </div>
 
                   <div className="modal-actions">
-                    {userLists.length > 0 && (
-                      <button 
-                        className="save-changes-btn"
-                        onClick={saveListChanges}
-                        disabled={!hasChanges() || savingChanges}
-                      >
-                        {savingChanges ? getUIText('saving') : hasChanges() ? getUIText('saveChanges') : getUIText('noChangesToSave')}
-                      </button>
-                    )}
-
-                    <button 
-                      className="create-list-btn"
-                      onClick={() => setShowCreateList(true)}
-                    >
-                      {getUIText('createNewList')}
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="create-list-form">
-                  <h4>{getUIText('createNewList')}</h4>
-                  <form onSubmit={handleCreateList}>
-                    <div className="form-group">
-                      <label htmlFor="listName">{getUIText('listName')}:</label>
-                      <input
-                        type="text"
-                        id="listName"
-                        value={newListName}
-                        onChange={(e) => setNewListName(e.target.value)}
-                        placeholder={getUIText('listNamePlaceholder')}
-                        maxLength="50"
-                        required
-                      />
-                    </div>
-
-                    <div className="form-buttons">
-                      <button 
-                        type="button" 
-                        onClick={() => setShowCreateList(false)}
-                        className="cancel-btn"
-                      >
-                        {getUIText('cancel')}
-                      </button>
-                      <button 
-                        type="submit" 
-                        disabled={createListLoading}
-                        className="submit-btn"
-                      >
-                        {createListLoading ? getUIText('creating') : getUIText('createList')}
-                      </button>
-                    </div>
-                  </form>
-                </div>
+              {userLists.length > 0 && (
+                <button 
+                  className="save-changes-btn"
+                  onClick={saveListChanges}
+                  disabled={!hasChanges() || savingChanges}
+                >
+                  {savingChanges ? getUIText('saving') : hasChanges() ? getUIText('saveChanges') : getUIText('noChangesToSave')}
+                </button>
               )}
+
+              <button 
+                className="create-list-btn"
+                onClick={() => setShowCreateList(true)}
+                disabled={savingChanges}
+              >
+                {getUIText('createNewList')}
+              </button>
             </div>
+          </>
+        ) : (
+          <div className="create-list-form">
+            <h4>{getUIText('createNewList')}</h4>
+            <form onSubmit={handleCreateList}>
+              <div className="form-group">
+                <label htmlFor="listName">{getUIText('listName')}:</label>
+                <input
+                  type="text"
+                  id="listName"
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  placeholder={getUIText('listNamePlaceholder')}
+                  maxLength="50"
+                  required
+                  disabled={createListLoading}
+                />
+              </div>
+
+              <div className="form-buttons">
+                <button 
+                  type="button" 
+                  onClick={handleBackToLists}
+                  className="cancel-btn"
+                  disabled={createListLoading}
+                >
+                  {getUIText('cancel')}
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={createListLoading || !newListName.trim()}
+                  className="submit-btn"
+                >
+                  {createListLoading ? getUIText('creating') : getUIText('createList')}
+                </button>
+              </div>
+            </form>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+    </div>
+  </div>
+)}
 
       <div className="detail-section">
-        <p><strong>{getUIText('isbn10')}:</strong> {getFirstAvailable(
-          book.isbn_10?.[0],
-          googleBook.industryIdentifiers?.find(id => id.type === 'ISBN_10')?.identifier
-        )}</p>
+  <p><strong>{getUIText('isbn10')}:</strong> {displayContent.isbn10 || getUIText('notAvailable')}</p>
+  
+  <p><strong>{getUIText('publishDate')}:</strong> {displayContent.publishDate || getUIText('notAvailable')}</p>
+  
+  <p><strong>{getUIText('publisher')}:</strong> {displayContent.publisher}</p>
+  
+  <p><strong>{getUIText('pages')}:</strong> {displayContent.pages || getUIText('notAvailable')}</p>
 
-        <p><strong>{getUIText('publishDate')}:</strong> {getFirstAvailable(
-          book.first_publish_date,
-          googleBook.publishedDate
-        )}</p>
+  {googleBook.averageRating && (
+    <p><strong>{getUIText('rating')}:</strong> {googleBook.averageRating} ⭐</p>
+  )}
 
-        {/* ENHANCED: Publisher display with proper translation support */}
-        <p><strong>{getUIText('publisher')}:</strong> {displayContent.publisher}</p>
+  {googleBook.previewLink && (
+    <p>
+      <strong>{getUIText('preview')}:</strong>{' '}
+      <a href={googleBook.previewLink} target="_blank" rel="noopener noreferrer">
+        {getUIText('viewOnGoogleBooks')}
+      </a>
+    </p>
+  )}
 
-        <p><strong>{getUIText('pages')}:</strong> {getFirstAvailable(
-          book.number_of_pages,
-          googleBook.pageCount
-        )}</p>
+  <p><strong>{getUIText('language')}:</strong> {displayContent.language}</p>
+  
+  <p><strong>{getUIText('description')}:</strong> {displayContent.description}</p>
 
-        {googleBook.averageRating && (
-          <p><strong>{getUIText('rating')}:</strong> {googleBook.averageRating} ⭐</p>
-        )}
+  {displayContent.authorName && (
+    <>
+      <h3>{getUIText('author')}</h3>
+      <p><strong>{getUIText('name')}:</strong> {displayContent.authorName}</p>
+      {displayContent.authorBio && (
+        <>
+          <p><strong>{getUIText('biography')}:</strong></p>
+          <p>{displayContent.authorBio}</p>
+        </>
+      )}
+    </>
+  )}
 
-        {googleBook.previewLink && (
-          <p>
-            <strong>{getUIText('preview')}:</strong>{' '}
-            <a href={googleBook.previewLink} target="_blank" rel="noopener noreferrer">
-              {getUIText('viewOnGoogleBooks')}
-            </a>
-          </p>
-        )}
-
-        <p><strong>{getUIText('language')}:</strong> {displayContent.language}</p>
-
-        {displayContent.description !== getUIText('notAvailable') && (
-          <>
-            <h3>{getUIText('description')}</h3>
-            <p>{displayContent.description}</p>
-          </>
-        )}
-
-        {author && (
-          <>
-            <h3>{getUIText('author')}</h3>
-            <p><strong>{getUIText('name')}:</strong> {displayContent.authorName}</p>
-            {displayContent.authorBio && (
-              <>
-                <p><strong>{getUIText('biography')}:</strong></p>
-                <p>{displayContent.authorBio}</p>
-              </>
-            )}
-          </>
-        )}
 
         {relatedBooks.length > 0 && (
           <>
