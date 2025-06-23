@@ -248,7 +248,7 @@ const logTranslationContent = (content, stage) => {
     
     if (!storedToken || !storedUserId) {
       alert('Please log in to view book details.');
-      navigate('/login');
+      navigate('/');
       return false;
     }
     
@@ -263,7 +263,7 @@ const logTranslationContent = (content, stage) => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     alert('Your session has expired. Please log in again.');
-    navigate('/login');
+    navigate('/');
   }, [navigate]);
 
   // API call wrapper with token authentication
