@@ -563,7 +563,6 @@ const logTranslationContent = (content, stage) => {
   const batchTranslateTexts = async (texts, targetLanguage) => {
     try {
       logToTerminal(`🌐 Sending ${texts.length} texts to Google Translate API`);
-      const key = 'AIzaSyBm4upvH8HrLToVqWByJ5DhNtOwIxLvdrY';
       
       const validTexts = texts.filter(text => text && text.trim());
       
@@ -572,7 +571,7 @@ const logTranslationContent = (content, stage) => {
       }
 
       const response = await fetch(
-        `https://translation.googleapis.com/language/translate/v2?key=${key}`,
+        `https://translation.googleapis.com/language/translate/v2?key=${process.env.REACT_APP_GOOGLE_TRANSLATE_API_KEY}`,
         {
           method: 'POST',
           headers: {
